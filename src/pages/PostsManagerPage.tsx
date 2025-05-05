@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/d
 import { Textarea } from "../shared/ui/textarea/textarea.tsx"
 import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
-import { Comment, NewComment } from "../entities/comment/model.ts"
+import { Comment } from "../entities/comment/model.ts"
 import { fetchUser } from "../entities/user/api.ts"
 import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
@@ -17,10 +17,11 @@ import { PostsFilters } from "../features/post/get-posts/ui/posts-filters.tsx"
 import { PostsPagination } from "../features/post/get-posts/ui/posts-pagination.tsx"
 import { useComments } from "../features/comment/get-comments/context.tsx"
 import { CommentsList } from "../features/comment/get-comments/ui/comments-list.tsx"
+import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add-dialog.tsx"
 
 const PostsManager = () => {
   const { searchOptions } = usePosts()
-  const { getComments, addComment, updateComment } = useComments()
+  const { getComments, updateComment } = useComments()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -29,36 +30,11 @@ const PostsManager = () => {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
 
-  const [newComment, setNewComment] = useState<Omit<NewComment, "postId"> & { postId: number | null }>({
-    body: "",
-    postId: null,
-    userId: 1,
-  })
   const [showAddCommentDialog, setShowAddCommentDialog] = useState(false)
   const [showEditCommentDialog, setShowEditCommentDialog] = useState(false)
   const [showPostDetailDialog, setShowPostDetailDialog] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-
-  const _setShowAddCommentDialog = (showAddCommentDialog: boolean, postId: number) => {
-    if (showAddCommentDialog) {
-      setNewComment((prev) => ({ ...prev, postId }))
-    }
-
-    setShowAddCommentDialog(showAddCommentDialog)
-  }
-
-  // 댓글 추가
-  const _addComment = async () => {
-    if (newComment.postId === null) return
-    try {
-      await addComment(newComment as NewComment)
-      setShowAddCommentDialog(false)
-      setNewComment({ body: "", postId: null, userId: 1 })
-    } catch (error) {
-      console.error("댓글 추가 오류:", error)
-    }
-  }
 
   // 댓글 업데이트
   const _updateComment = async () => {
@@ -133,21 +109,11 @@ const PostsManager = () => {
       />
 
       {/* 댓글 추가 대화상자 */}
-      <Dialog open={showAddCommentDialog} onOpenChange={setShowAddCommentDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>새 댓글 추가</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="댓글 내용"
-              value={newComment.body}
-              onChange={(e) => setNewComment({ ...newComment, body: e.target.value })}
-            />
-            <Button onClick={_addComment}>댓글 추가</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CommentAddDialog
+        postId={selectedPost?.id}
+        showAddCommentDialog={showAddCommentDialog}
+        setShowAddCommentDialog={setShowAddCommentDialog}
+      />
 
       {/* 댓글 수정 대화상자 */}
       <Dialog open={showEditCommentDialog} onOpenChange={setShowEditCommentDialog}>
@@ -180,7 +146,7 @@ const PostsManager = () => {
             <CommentsList
               postId={selectedPost?.id}
               setSelectedComment={setSelectedComment}
-              setShowAddCommentDialog={_setShowAddCommentDialog}
+              setShowAddCommentDialog={setShowAddCommentDialog}
               setShowEditCommentDialog={setShowEditCommentDialog}
             />
           </div>
