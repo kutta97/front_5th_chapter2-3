@@ -3,7 +3,6 @@ import { Plus } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/dialog/dialog.tsx"
-import { Textarea } from "../shared/ui/textarea/textarea.tsx"
 import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment } from "../entities/comment/model.ts"
@@ -18,10 +17,11 @@ import { PostsPagination } from "../features/post/get-posts/ui/posts-pagination.
 import { useComments } from "../features/comment/get-comments/context.tsx"
 import { CommentsList } from "../features/comment/get-comments/ui/comments-list.tsx"
 import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add-dialog.tsx"
+import { CommentUpdateDialog } from "../features/comment/update-comment/ui/comment-update-dialog.tsx"
 
 const PostsManager = () => {
   const { searchOptions } = usePosts()
-  const { getComments, updateComment } = useComments()
+  const { getComments } = useComments()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -35,17 +35,6 @@ const PostsManager = () => {
   const [showPostDetailDialog, setShowPostDetailDialog] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-
-  // 댓글 업데이트
-  const _updateComment = async () => {
-    try {
-      if (!selectedComment) return
-      await updateComment(selectedComment)
-      setShowEditCommentDialog(false)
-    } catch (error) {
-      console.error("댓글 업데이트 오류:", error)
-    }
-  }
 
   // 게시물 상세 보기
   const openPostDetail = (post: Post) => {
@@ -116,24 +105,12 @@ const PostsManager = () => {
       />
 
       {/* 댓글 수정 대화상자 */}
-      <Dialog open={showEditCommentDialog} onOpenChange={setShowEditCommentDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>댓글 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="댓글 내용"
-              value={selectedComment?.body || ""}
-              onChange={(e) => {
-                if (!selectedComment) return
-                setSelectedComment({ ...selectedComment, body: e.target.value })
-              }}
-            />
-            <Button onClick={_updateComment}>댓글 업데이트</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CommentUpdateDialog
+        showEditCommentDialog={showEditCommentDialog}
+        setShowEditCommentDialog={setShowEditCommentDialog}
+        selectedComment={selectedComment}
+        setSelectedComment={setSelectedComment}
+      />
 
       {/* 게시물 상세 보기 대화상자 */}
       <Dialog open={showPostDetailDialog} onOpenChange={setShowPostDetailDialog}>
