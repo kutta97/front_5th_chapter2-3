@@ -1,27 +1,25 @@
-import { useEffect, useState } from "react"
-import { Edit2, Plus, Search, ThumbsUp, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Edit2, Plus, ThumbsUp, Trash2 } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
-import { Input } from "../shared/ui/input/input.tsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shared/ui/select/select.tsx"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/dialog/dialog.tsx"
 import { Textarea } from "../shared/ui/textarea/textarea.tsx"
 import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment, NewComment } from "../entities/comment/model.ts"
-import { Tag } from "../entities/tag/model.ts"
 import { fetchUser } from "../entities/user/api.ts"
 import { createComment, deleteComment, fetchComments, updateComment } from "../entities/comment/api.ts"
-import { fetchTags } from "../entities/tag/api.ts"
 import { likeComment } from "../features/comment/like-comment/api.ts"
 import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
 import { highlightText } from "../shared/lib/utils.tsx"
 import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
 import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-dialog.tsx"
+import { PostsFilters } from "../features/post/get-posts/ui/posts-filters.tsx"
 
 const PostsManager = () => {
-  const { total, searchOptions, getPostsByTag, searchPosts, setSearchOptions, updateURL } = usePosts()
+  const { total, searchOptions, setSearchOptions } = usePosts()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -30,7 +28,6 @@ const PostsManager = () => {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
 
-  const [tags, setTags] = useState<Tag[]>([])
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
 
   const [newComment, setNewComment] = useState<Omit<NewComment, "postId"> & { postId: number | null }>({
@@ -43,16 +40,6 @@ const PostsManager = () => {
   const [showPostDetailDialog, setShowPostDetailDialog] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-
-  // 태그 가져오기
-  const _fetchTags = async () => {
-    try {
-      const data = await fetchTags()
-      setTags(data)
-    } catch (error) {
-      console.error("태그 가져오기 오류:", error)
-    }
-  }
 
   // 댓글 가져오기
   const _fetchComments = async (postId: number) => {
@@ -157,10 +144,6 @@ const PostsManager = () => {
     }
   }
 
-  useEffect(() => {
-    _fetchTags()
-  }, [])
-
   // 댓글 렌더링
   const renderComments = (postId?: number) => {
     if (!postId) return null
@@ -227,60 +210,7 @@ const PostsManager = () => {
       <CardContent>
         <div className="flex flex-col gap-4">
           {/* 검색 및 필터 컨트롤 */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="게시물 검색..."
-                  className="pl-8"
-                  value={searchOptions.searchQuery}
-                  onChange={(e) => setSearchOptions({ searchQuery: e.target.value })}
-                  onKeyPress={(e) => e.key === "Enter" && searchPosts()}
-                />
-              </div>
-            </div>
-            <Select
-              value={searchOptions.tag}
-              onValueChange={(value) => {
-                setSearchOptions({ tag: value })
-                getPostsByTag(value)
-                updateURL()
-              }}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="태그 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 태그</SelectItem>
-                {tags?.map((tag) => (
-                  <SelectItem key={tag.url} value={tag.slug}>
-                    {tag.slug}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={searchOptions.sortBy} onValueChange={(value) => setSearchOptions({ sortBy: value })}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="정렬 기준" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">없음</SelectItem>
-                <SelectItem value="id">ID</SelectItem>
-                <SelectItem value="title">제목</SelectItem>
-                <SelectItem value="reactions">반응</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={searchOptions.sortOrder} onValueChange={(value) => setSearchOptions({ sortOrder: value })}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="정렬 순서" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">오름차순</SelectItem>
-                <SelectItem value="desc">내림차순</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <PostsFilters />
 
           {/* 게시물 테이블 */}
           <PostsTable
