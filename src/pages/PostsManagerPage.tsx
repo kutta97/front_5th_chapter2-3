@@ -8,8 +8,6 @@ import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment, NewComment } from "../entities/comment/model.ts"
 import { fetchUser } from "../entities/user/api.ts"
-import { createComment, deleteComment, fetchComments, updateComment } from "../entities/comment/api.ts"
-import { likeComment } from "../features/comment/like-comment/api.ts"
 import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
 import { highlightText } from "../shared/lib/utils.tsx"
@@ -17,9 +15,11 @@ import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
 import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-dialog.tsx"
 import { PostsFilters } from "../features/post/get-posts/ui/posts-filters.tsx"
 import { PostsPagination } from "../features/post/get-posts/ui/posts-pagination.tsx"
+import { useComments } from "../features/comment/get-comments/context.tsx"
 
 const PostsManager = () => {
   const { searchOptions } = usePosts()
+  const { comments, getComments, addComment, updateComment, deleteComment, likeComment } = useComments()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -27,8 +27,6 @@ const PostsManager = () => {
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-
-  const [comments, setComments] = useState<Record<string, Comment[]>>({})
 
   const [newComment, setNewComment] = useState<Omit<NewComment, "postId"> & { postId: number | null }>({
     body: "",
@@ -41,27 +39,11 @@ const PostsManager = () => {
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
-  // 댓글 가져오기
-  const _fetchComments = async (postId: number) => {
-    if (comments[postId]) return // 이미 불러온 댓글이 있으면 다시 불러오지 않음
-    try {
-      const comments = await fetchComments(postId)
-      setComments((prev) => ({ ...prev, [postId]: comments.comments }))
-    } catch (error) {
-      console.error("댓글 가져오기 오류:", error)
-    }
-  }
-
   // 댓글 추가
-  const addComment = async () => {
+  const _addComment = async () => {
+    if (newComment.postId === null) return
     try {
-      if (newComment.postId === null) return
-
-      const comment = await createComment(newComment as NewComment)
-      setComments((prev) => ({
-        ...prev,
-        [comment.postId]: [...(prev[comment.postId] || []), comment],
-      }))
+      await addComment(newComment as NewComment)
       setShowAddCommentDialog(false)
       setNewComment({ body: "", postId: null, userId: 1 })
     } catch (error) {
@@ -73,60 +55,17 @@ const PostsManager = () => {
   const _updateComment = async () => {
     try {
       if (!selectedComment) return
-      const updatedComment = await updateComment(selectedComment)
-      setComments((prev) => ({
-        ...prev,
-        [updatedComment.postId]: prev[updatedComment.postId].map((comment) =>
-          comment.id === updatedComment.id ? updatedComment : comment,
-        ),
-      }))
+      await updateComment(selectedComment)
       setShowEditCommentDialog(false)
     } catch (error) {
       console.error("댓글 업데이트 오류:", error)
     }
   }
 
-  // 댓글 삭제
-  const _deleteComment = async (commentId: number, postId: number) => {
-    try {
-      await deleteComment(commentId)
-      setComments((prev) => ({
-        ...prev,
-        [postId]: prev[postId].filter((comment) => comment.id !== commentId),
-      }))
-    } catch (error) {
-      console.error("댓글 삭제 오류:", error)
-    }
-  }
-
-  // 댓글 좋아요
-  const _likeComment = async (commentId: number, postId: number) => {
-    try {
-      const likedComment = comments[postId].find((c) => c.id === commentId)
-      if (!likedComment) return
-
-      const newComment = await likeComment(likedComment)
-
-      setComments((prev) => ({
-        ...prev,
-        [postId]: prev[postId].map((comment) =>
-          comment.id === newComment.id
-            ? {
-                ...newComment,
-                likes: comment.likes + 1,
-              }
-            : comment,
-        ),
-      }))
-    } catch (error) {
-      console.error("댓글 좋아요 오류:", error)
-    }
-  }
-
   // 게시물 상세 보기
   const openPostDetail = (post: Post) => {
     setSelectedPost(post)
-    _fetchComments(post.id)
+    getComments(post.id)
     setShowPostDetailDialog(true)
   }
 
@@ -171,7 +110,7 @@ const PostsManager = () => {
                 <span className="truncate">{highlightText(comment.body, searchOptions.searchQuery)}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <Button variant="ghost" size="sm" onClick={() => _likeComment(comment.id, postId)}>
+                <Button variant="ghost" size="sm" onClick={() => likeComment(comment.id, postId)}>
                   <ThumbsUp className="w-3 h-3" />
                   <span className="ml-1 text-xs">{comment.likes}</span>
                 </Button>
@@ -185,7 +124,7 @@ const PostsManager = () => {
                 >
                   <Edit2 className="w-3 h-3" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => _deleteComment(comment.id, postId)}>
+                <Button variant="ghost" size="sm" onClick={() => deleteComment(comment.id, postId)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
@@ -248,7 +187,7 @@ const PostsManager = () => {
               value={newComment.body}
               onChange={(e) => setNewComment({ ...newComment, body: e.target.value })}
             />
-            <Button onClick={addComment}>댓글 추가</Button>
+            <Button onClick={_addComment}>댓글 추가</Button>
           </div>
         </DialogContent>
       </Dialog>

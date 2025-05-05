@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import { MemoryRouter } from "react-router-dom"
 import { PostsProvider } from "../src/features/post/get-posts/context"
+import { CommentsProvider } from "../src/features/comment/get-comments/context"
 import PostsManager from "../src/pages/PostsManagerPage"
 import * as React from "react"
 import "@testing-library/jest-dom"
@@ -49,7 +50,9 @@ const renderPostsManager = () => {
   return render(
     <MemoryRouter>
       <PostsProvider>
-        <PostsManager />
+        <CommentsProvider>
+          <PostsManager />
+        </CommentsProvider>
       </PostsProvider>
     </MemoryRouter>,
   )

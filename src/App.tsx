@@ -3,6 +3,7 @@ import Header from "./widgets/ui/Header.tsx"
 import Footer from "./widgets/ui/Footer.tsx"
 import PostsManagerPage from "./pages/PostsManagerPage.tsx"
 import { PostsProvider } from "./features/post/get-posts/context.tsx"
+import { CommentsProvider } from "./features/comment/get-comments/context.tsx"
 
 const App = () => {
   return (
@@ -11,7 +12,9 @@ const App = () => {
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           <PostsProvider>
-            <PostsManagerPage />
+            <CommentsProvider>
+              <PostsManagerPage />
+            </CommentsProvider>
           </PostsProvider>
         </main>
         <Footer />
