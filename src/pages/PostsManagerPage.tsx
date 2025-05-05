@@ -14,7 +14,7 @@ import { CommentsList } from "../features/comment/get-comments/ui/comments-list.
 import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add-dialog.tsx"
 import { CommentUpdateDialog } from "../features/comment/update-comment/ui/comment-update-dialog.tsx"
 import { PostDetailModal } from "../features/post/get-post/ui/post-detail-modal.tsx"
-import { UserDetailModal } from "../features/user/get-user/ui/user-detail-modal.tsx"
+import { UserDetailModal } from "../features/user/ui/user-detail-modal.tsx"
 import { TagsSelect } from "../features/tags/ui/tags-select.tsx"
 import { usePosts } from "../features/post/get-posts/context.tsx"
 

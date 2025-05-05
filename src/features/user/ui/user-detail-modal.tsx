@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../shared/ui/dialog/dialog.tsx"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../shared/ui/dialog/dialog.tsx"
 import { useGetUser } from "../api.ts"
 
 type UserDetailModalProps = {
