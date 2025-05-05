@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/dialog/dialog.tsx"
 import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment } from "../entities/comment/model.ts"
@@ -17,6 +16,7 @@ import { CommentsList } from "../features/comment/get-comments/ui/comments-list.
 import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add-dialog.tsx"
 import { CommentUpdateDialog } from "../features/comment/update-comment/ui/comment-update-dialog.tsx"
 import { PostDetailModal } from "../features/post/get-post/ui/post-detail-modal.tsx"
+import { UserDetailModal } from "../features/user/get-user/ui/user-detail-modal.tsx"
 
 const PostsManager = () => {
   const { getComments } = useComments()
@@ -125,38 +125,11 @@ const PostsManager = () => {
       </PostDetailModal>
 
       {/* 사용자 모달 */}
-      <Dialog open={showUserModal} onOpenChange={setShowUserModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>사용자 정보</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <img src={selectedUser?.image} alt={selectedUser?.username} className="w-24 h-24 rounded-full mx-auto" />
-            <h3 className="text-xl font-semibold text-center">{selectedUser?.username}</h3>
-            <div className="space-y-2">
-              <p>
-                <strong>이름:</strong> {selectedUser?.firstName} {selectedUser?.lastName}
-              </p>
-              <p>
-                <strong>나이:</strong> {selectedUser?.age}
-              </p>
-              <p>
-                <strong>이메일:</strong> {selectedUser?.email}
-              </p>
-              <p>
-                <strong>전화번호:</strong> {selectedUser?.phone}
-              </p>
-              <p>
-                <strong>주소:</strong> {selectedUser?.address?.address}, {selectedUser?.address?.city},{" "}
-                {selectedUser?.address?.state}
-              </p>
-              <p>
-                <strong>직장:</strong> {selectedUser?.company?.name} - {selectedUser?.company?.title}
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UserDetailModal
+        user={selectedUser}
+        showUserDetailModal={showUserModal}
+        setShowUserDetailModal={setShowUserModal}
+      />
     </Card>
   )
 }
