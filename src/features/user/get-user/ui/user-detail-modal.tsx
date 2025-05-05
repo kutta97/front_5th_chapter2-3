@@ -1,13 +1,39 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../shared/ui/dialog/dialog.tsx"
+import { useEffect, useState } from "react"
+import { fetchUser } from "../../../../entities/user/api.ts"
 import { User } from "../../../../entities/user/model.ts"
 
 type UserDetailModalProps = {
-  user: User | null
+  userId?: number | null
   showUserDetailModal: boolean
   setShowUserDetailModal: (showUserDetailModal: boolean) => void
 }
 
-export const UserDetailModal = ({ user, showUserDetailModal, setShowUserDetailModal }: UserDetailModalProps) => {
+export const UserDetailModal = ({
+  userId = null,
+  showUserDetailModal,
+  setShowUserDetailModal,
+}: UserDetailModalProps) => {
+  const [user, setUser] = useState<User | null>(null)
+
+  const getUserDetails = async (userId: number) => {
+    try {
+      const currentUser = await fetchUser(userId)
+
+      setUser(currentUser)
+    } catch (error) {
+      console.error("사용자 정보 가져오기 오류:", error)
+    }
+  }
+
+  useEffect(() => {
+    if (userId === null) {
+      return
+    }
+
+    void getUserDetails(userId)
+  }, [userId])
+
   return (
     <Dialog open={showUserDetailModal} onOpenChange={setShowUserDetailModal}>
       <DialogContent>

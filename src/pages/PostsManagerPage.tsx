@@ -3,9 +3,7 @@ import { Plus } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
 import { Post } from "../entities/post/model.ts"
-import { User } from "../entities/user/model.ts"
 import { Comment } from "../entities/comment/model.ts"
-import { fetchUser } from "../entities/user/api.ts"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
 import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
 import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-dialog.tsx"
@@ -24,6 +22,7 @@ const PostsManager = () => {
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
@@ -32,12 +31,11 @@ const PostsManager = () => {
   const [showEditCommentDialog, setShowEditCommentDialog] = useState(false)
   const [showPostDetailDialog, setShowPostDetailDialog] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   // 게시물 상세 보기
-  const openPostDetail = (post: Post) => {
+  const openPostDetail = async (post: Post) => {
     setSelectedPost(post)
-    getComments(post.id)
+    await getComments(post.id)
     setShowPostDetailDialog(true)
   }
 
@@ -45,14 +43,8 @@ const PostsManager = () => {
   const openUserModal = async (userId?: number) => {
     if (!userId) return
 
-    try {
-      const currentUser = await fetchUser(userId)
-
-      setSelectedUser(currentUser)
-      setShowUserModal(true)
-    } catch (error) {
-      console.error("사용자 정보 가져오기 오류:", error)
-    }
+    setSelectedUserId(userId)
+    setShowUserModal(true)
   }
 
   return (
@@ -126,7 +118,7 @@ const PostsManager = () => {
 
       {/* 사용자 모달 */}
       <UserDetailModal
-        user={selectedUser}
+        userId={selectedUserId}
         showUserDetailModal={showUserModal}
         setShowUserDetailModal={setShowUserModal}
       />
