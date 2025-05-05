@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../shared/ui/table/table.tsx"
+import { Edit2, Plus, Search, ThumbsUp, Trash2 } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
 import { Input } from "../shared/ui/input/input.tsx"
@@ -16,21 +15,12 @@ import { createComment, deleteComment, fetchComments, updateComment } from "../e
 import { fetchTags } from "../entities/tag/api.ts"
 import { likeComment } from "../features/comment/like-comment/api.ts"
 import { usePosts } from "../features/post/get-posts/context.tsx"
+import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
+import { highlightText } from "../shared/lib/utils.tsx"
 
 const PostsManager = () => {
-  const {
-    posts,
-    total,
-    searchOptions,
-    loading,
-    getPostsByTag,
-    searchPosts,
-    addPost,
-    updatePost,
-    deletePost,
-    setSearchOptions,
-    updateURL,
-  } = usePosts()
+  const { total, searchOptions, getPostsByTag, searchPosts, addPost, updatePost, setSearchOptions, updateURL } =
+    usePosts()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -84,15 +74,6 @@ const PostsManager = () => {
       setShowEditDialog(false)
     } catch (error) {
       console.error("게시물 업데이트 오류:", error)
-    }
-  }
-
-  // 게시물 삭제
-  const _deletePost = async (postId: number) => {
-    try {
-      await deletePost(postId)
-    } catch (error) {
-      console.error("게시물 삭제 오류:", error)
     }
   }
 
@@ -202,104 +183,6 @@ const PostsManager = () => {
   useEffect(() => {
     _fetchTags()
   }, [])
-
-  // 하이라이트 함수 추가
-  const highlightText = (text?: string, highlight?: string) => {
-    if (!text) return null
-    if (!highlight?.trim()) {
-      return <span>{text}</span>
-    }
-    const regex = new RegExp(`(${highlight})`, "gi")
-    const parts = text.split(regex)
-    return (
-      <span>
-        {parts.map((part, i) => (regex.test(part) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>))}
-      </span>
-    )
-  }
-
-  // 게시물 테이블 렌더링
-  const renderPostTable = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[50px]">ID</TableHead>
-          <TableHead>제목</TableHead>
-          <TableHead className="w-[150px]">작성자</TableHead>
-          <TableHead className="w-[150px]">반응</TableHead>
-          <TableHead className="w-[150px]">작업</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {posts.map((post) => (
-          <TableRow key={post.id}>
-            <TableCell>{post.id}</TableCell>
-            <TableCell>
-              <div className="space-y-1">
-                <div>{highlightText(post.title, searchOptions.searchQuery)}</div>
-
-                <div className="flex flex-wrap gap-1">
-                  {post.tags?.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`px-1 text-[9px] font-semibold rounded-[4px] cursor-pointer ${
-                        searchOptions.tag === tag
-                          ? "text-white bg-blue-500 hover:bg-blue-600"
-                          : "text-blue-800 bg-blue-100 hover:bg-blue-200"
-                      }`}
-                      onClick={() => {
-                        setSearchOptions({ tag })
-                        updateURL()
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div
-                className="flex items-center space-x-2 cursor-pointer"
-                onClick={() => openUserModal(post.author?.id)}
-              >
-                <img src={post.author?.image} alt={post.author?.username} className="w-8 h-8 rounded-full" />
-                <span>{post.author?.username}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4" />
-                <span>{post.reactions?.likes || 0}</span>
-                <ThumbsDown className="w-4 h-4" />
-                <span>{post.reactions?.dislikes || 0}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => openPostDetail(post)}>
-                  <MessageSquare className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedPost(post)
-                    setShowEditDialog(true)
-                  }}
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => _deletePost(post.id)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
 
   // 댓글 렌더링
   const renderComments = (postId?: number) => {
@@ -423,7 +306,12 @@ const PostsManager = () => {
           </div>
 
           {/* 게시물 테이블 */}
-          {loading ? <div className="flex justify-center p-4">로딩 중...</div> : renderPostTable()}
+          <PostsTable
+            openPostDetail={openPostDetail}
+            setSelectedPost={setSelectedPost}
+            openUserModal={openUserModal}
+            setShowEditDialog={setShowEditDialog}
+          />
 
           {/* 페이지네이션 */}
           <div className="flex justify-between items-center">
