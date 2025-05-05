@@ -6,7 +6,7 @@ import { Input } from "../shared/ui/input/input.tsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shared/ui/select/select.tsx"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/dialog/dialog.tsx"
 import { Textarea } from "../shared/ui/textarea/textarea.tsx"
-import { NewPost, Post } from "../entities/post/model.ts"
+import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment, NewComment } from "../entities/comment/model.ts"
 import { Tag } from "../entities/tag/model.ts"
@@ -17,10 +17,10 @@ import { likeComment } from "../features/comment/like-comment/api.ts"
 import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
 import { highlightText } from "../shared/lib/utils.tsx"
+import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
 
 const PostsManager = () => {
-  const { total, searchOptions, getPostsByTag, searchPosts, addPost, updatePost, setSearchOptions, updateURL } =
-    usePosts()
+  const { total, searchOptions, getPostsByTag, searchPosts, updatePost, setSearchOptions, updateURL } = usePosts()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -28,7 +28,6 @@ const PostsManager = () => {
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  const [newPost, setNewPost] = useState<NewPost>({ title: "", body: "", userId: 1 })
 
   const [tags, setTags] = useState<Tag[]>([])
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
@@ -51,17 +50,6 @@ const PostsManager = () => {
       setTags(data)
     } catch (error) {
       console.error("태그 가져오기 오류:", error)
-    }
-  }
-
-  // 게시물 추가
-  const _addPost = async () => {
-    try {
-      await addPost(newPost)
-      setShowAddDialog(false)
-      setNewPost({ title: "", body: "", userId: 1 })
-    } catch (error) {
-      console.error("게시물 추가 오류:", error)
     }
   }
 
@@ -351,33 +339,7 @@ const PostsManager = () => {
       </CardContent>
 
       {/* 게시물 추가 대화상자 */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>새 게시물 추가</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="제목"
-              value={newPost.title}
-              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-            />
-            <Textarea
-              rows={30}
-              placeholder="내용"
-              value={newPost.body}
-              onChange={(e) => setNewPost({ ...newPost, body: e.target.value })}
-            />
-            <Input
-              type="number"
-              placeholder="사용자 ID"
-              value={newPost.userId}
-              onChange={(e) => setNewPost({ ...newPost, userId: Number(e.target.value) })}
-            />
-            <Button onClick={_addPost}>게시물 추가</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PostAddDialog showAddDialog={showAddDialog} setShowAddDialog={setShowAddDialog} />
 
       {/* 게시물 수정 대화상자 */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
