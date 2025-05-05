@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Edit2, Plus, ThumbsUp, Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "../shared/ui/button/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/ui/card/card.tsx"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/ui/dialog/dialog.tsx"
@@ -16,10 +16,11 @@ import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-di
 import { PostsFilters } from "../features/post/get-posts/ui/posts-filters.tsx"
 import { PostsPagination } from "../features/post/get-posts/ui/posts-pagination.tsx"
 import { useComments } from "../features/comment/get-comments/context.tsx"
+import { CommentsList } from "../features/comment/get-comments/ui/comments-list.tsx"
 
 const PostsManager = () => {
   const { searchOptions } = usePosts()
-  const { comments, getComments, addComment, updateComment, deleteComment, likeComment } = useComments()
+  const { getComments, addComment, updateComment } = useComments()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -38,6 +39,14 @@ const PostsManager = () => {
   const [showPostDetailDialog, setShowPostDetailDialog] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  const _setShowAddCommentDialog = (showAddCommentDialog: boolean, postId: number) => {
+    if (showAddCommentDialog) {
+      setNewComment((prev) => ({ ...prev, postId }))
+    }
+
+    setShowAddCommentDialog(showAddCommentDialog)
+  }
 
   // 댓글 추가
   const _addComment = async () => {
@@ -81,58 +90,6 @@ const PostsManager = () => {
     } catch (error) {
       console.error("사용자 정보 가져오기 오류:", error)
     }
-  }
-
-  // 댓글 렌더링
-  const renderComments = (postId?: number) => {
-    if (!postId) return null
-
-    return (
-      <div className="mt-2">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold">댓글</h3>
-          <Button
-            size="sm"
-            onClick={() => {
-              setNewComment((prev) => ({ ...prev, postId }))
-              setShowAddCommentDialog(true)
-            }}
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            댓글 추가
-          </Button>
-        </div>
-        <div className="space-y-1">
-          {comments[postId]?.map((comment) => (
-            <div key={comment.id} className="flex items-center justify-between text-sm border-b pb-1">
-              <div className="flex items-center space-x-2 overflow-hidden">
-                <span className="font-medium truncate">{comment.user.username}:</span>
-                <span className="truncate">{highlightText(comment.body, searchOptions.searchQuery)}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Button variant="ghost" size="sm" onClick={() => likeComment(comment.id, postId)}>
-                  <ThumbsUp className="w-3 h-3" />
-                  <span className="ml-1 text-xs">{comment.likes}</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedComment(comment)
-                    setShowEditCommentDialog(true)
-                  }}
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => deleteComment(comment.id, postId)}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -220,7 +177,12 @@ const PostsManager = () => {
           </DialogHeader>
           <div className="space-y-4">
             <p>{highlightText(selectedPost?.body, searchOptions.searchQuery)}</p>
-            {renderComments(selectedPost?.id)}
+            <CommentsList
+              postId={selectedPost?.id}
+              setSelectedComment={setSelectedComment}
+              setShowAddCommentDialog={_setShowAddCommentDialog}
+              setShowEditCommentDialog={setShowEditCommentDialog}
+            />
           </div>
         </DialogContent>
       </Dialog>
