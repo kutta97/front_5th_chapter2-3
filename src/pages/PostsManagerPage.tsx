@@ -15,8 +15,11 @@ import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add
 import { CommentUpdateDialog } from "../features/comment/update-comment/ui/comment-update-dialog.tsx"
 import { PostDetailModal } from "../features/post/get-post/ui/post-detail-modal.tsx"
 import { UserDetailModal } from "../features/user/get-user/ui/user-detail-modal.tsx"
+import { TagsSelect } from "../features/tags/ui/tags-select.tsx"
+import { usePosts } from "../features/post/get-posts/context.tsx"
 
 const PostsManager = () => {
+  const { searchOptions, setSearchOptions } = usePosts()
   const { getComments } = useComments()
 
   // 상태 관리
@@ -61,7 +64,9 @@ const PostsManager = () => {
       <CardContent>
         <div className="flex flex-col gap-4">
           {/* 검색 및 필터 컨트롤 */}
-          <PostsFilters />
+          <PostsFilters>
+            <TagsSelect value={searchOptions.tag} onValueChange={(value) => setSearchOptions({ tag: value })} />
+          </PostsFilters>
 
           {/* 게시물 테이블 */}
           <PostsTable

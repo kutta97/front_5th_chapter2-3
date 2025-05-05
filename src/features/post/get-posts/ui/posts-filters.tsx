@@ -2,28 +2,10 @@ import { Search } from "lucide-react"
 import { Input } from "../../../../shared/ui/input/input.tsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../shared/ui/select/select.tsx"
 import { usePosts } from "../context.tsx"
-import { useEffect, useState } from "react"
-import { Tag } from "../../../../entities/tag/model.ts"
-import { fetchTags } from "../../../../entities/tag/api.ts"
+import { PropsWithChildren } from "react"
 
-export const PostsFilters = () => {
-  const { searchOptions, getPostsByTag, searchPosts, setSearchOptions, updateURL } = usePosts()
-
-  const [tags, setTags] = useState<Tag[]>([])
-
-  // 태그 가져오기
-  const _fetchTags = async () => {
-    try {
-      const data = await fetchTags()
-      setTags(data)
-    } catch (error) {
-      console.error("태그 가져오기 오류:", error)
-    }
-  }
-
-  useEffect(() => {
-    _fetchTags()
-  }, [])
+export const PostsFilters = ({ children }: PropsWithChildren) => {
+  const { searchOptions, searchPosts, setSearchOptions } = usePosts()
 
   return (
     <div className="flex gap-4">
@@ -39,26 +21,7 @@ export const PostsFilters = () => {
           />
         </div>
       </div>
-      <Select
-        value={searchOptions.tag}
-        onValueChange={(value) => {
-          setSearchOptions({ tag: value })
-          getPostsByTag(value)
-          updateURL()
-        }}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="태그 선택" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">모든 태그</SelectItem>
-          {tags?.map((tag) => (
-            <SelectItem key={tag.url} value={tag.slug}>
-              {tag.slug}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {children}
       <Select value={searchOptions.sortBy} onValueChange={(value) => setSearchOptions({ sortBy: value })}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="정렬 기준" />
