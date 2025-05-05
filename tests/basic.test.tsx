@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import { MemoryRouter } from "react-router-dom"
+import { PostsProvider } from "../src/features/post/get-posts/context"
 import PostsManager from "../src/pages/PostsManagerPage"
 import * as React from "react"
 import "@testing-library/jest-dom"
@@ -47,7 +48,9 @@ afterAll(() => server.close())
 const renderPostsManager = () => {
   return render(
     <MemoryRouter>
-      <PostsManager />
+      <PostsProvider>
+        <PostsManager />
+      </PostsProvider>
     </MemoryRouter>,
   )
 }
