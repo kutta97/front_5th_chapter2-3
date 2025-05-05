@@ -10,6 +10,7 @@ import PostsManager from "../src/pages/PostsManagerPage"
 import * as React from "react"
 import "@testing-library/jest-dom"
 import { TEST_POSTS, TEST_SEARCH_POST, TEST_USERS } from "./mockData"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 // MSW 서버 설정
 const server = setupServer(
@@ -47,14 +48,18 @@ afterAll(() => server.close())
 
 // 테스트에 공통으로 사용될 render 함수
 const renderPostsManager = () => {
+  const queryClient = new QueryClient()
+
   return render(
-    <MemoryRouter>
-      <PostsProvider>
-        <CommentsProvider>
-          <PostsManager />
-        </CommentsProvider>
-      </PostsProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <PostsProvider>
+          <CommentsProvider>
+            <PostsManager />
+          </CommentsProvider>
+        </PostsProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }
 
