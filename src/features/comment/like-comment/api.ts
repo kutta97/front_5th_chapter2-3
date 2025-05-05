@@ -1,8 +1,6 @@
 import { Comment } from "../../../entities/comment/model.ts"
-import ApiClient from "../../../shared/api/apiClient.ts"
+import { updateCommentLikes } from "../../../entities/comment/api.ts"
 
 export const likeComment = (comment: Comment) => {
-  return ApiClient.patch<Comment, Pick<Comment, "likes">>(`/comments/${comment.id}`, {
-    likes: comment.likes + 1,
-  })
+  return updateCommentLikes(comment.id, comment.likes + 1)
 }

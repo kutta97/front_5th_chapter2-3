@@ -15,6 +15,10 @@ export const updateComment = (comment: Comment) => {
   })
 }
 
+export const updateCommentLikes = (commentId: number, likes: number) => {
+  return ApiClient.patch<Comment, Pick<Comment, "likes">>(`/comments/${commentId}`, { likes })
+}
+
 export const deleteComment = (commentId: number) => {
   return ApiClient.del(`/comments/${commentId}`)
 }
