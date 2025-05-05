@@ -7,9 +7,7 @@ import { Post } from "../entities/post/model.ts"
 import { User } from "../entities/user/model.ts"
 import { Comment } from "../entities/comment/model.ts"
 import { fetchUser } from "../entities/user/api.ts"
-import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
-import { highlightText } from "../shared/lib/utils.tsx"
 import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
 import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-dialog.tsx"
 import { PostsFilters } from "../features/post/get-posts/ui/posts-filters.tsx"
@@ -18,9 +16,9 @@ import { useComments } from "../features/comment/get-comments/context.tsx"
 import { CommentsList } from "../features/comment/get-comments/ui/comments-list.tsx"
 import { CommentAddDialog } from "../features/comment/add-comment/ui/comment-add-dialog.tsx"
 import { CommentUpdateDialog } from "../features/comment/update-comment/ui/comment-update-dialog.tsx"
+import { PostDetailModal } from "../features/post/get-post/ui/post-detail-modal.tsx"
 
 const PostsManager = () => {
-  const { searchOptions } = usePosts()
   const { getComments } = useComments()
 
   // 상태 관리
@@ -113,22 +111,18 @@ const PostsManager = () => {
       />
 
       {/* 게시물 상세 보기 대화상자 */}
-      <Dialog open={showPostDetailDialog} onOpenChange={setShowPostDetailDialog}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{highlightText(selectedPost?.title, searchOptions.searchQuery)}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>{highlightText(selectedPost?.body, searchOptions.searchQuery)}</p>
-            <CommentsList
-              postId={selectedPost?.id}
-              setSelectedComment={setSelectedComment}
-              setShowAddCommentDialog={setShowAddCommentDialog}
-              setShowEditCommentDialog={setShowEditCommentDialog}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PostDetailModal
+        post={selectedPost}
+        showPostDetailDialog={showPostDetailDialog}
+        setShowPostDetailDialog={setShowPostDetailDialog}
+      >
+        <CommentsList
+          postId={selectedPost?.id}
+          setSelectedComment={setSelectedComment}
+          setShowAddCommentDialog={setShowAddCommentDialog}
+          setShowEditCommentDialog={setShowEditCommentDialog}
+        />
+      </PostDetailModal>
 
       {/* 사용자 모달 */}
       <Dialog open={showUserModal} onOpenChange={setShowUserModal}>
