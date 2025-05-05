@@ -10,11 +10,11 @@ export const fetchPosts = (limit: number, skip: number) => {
 }
 
 export const updatePost = (post: Post) => {
-  return ApiClient.put<Post, Post>(`/api/posts/${post.id}`, post)
+  return ApiClient.put<Post, Post>(`/posts/${post.id}`, post)
 }
 
 export const deletePost = (postId: number) => {
-  return ApiClient.del(`/api/posts/${postId}`)
+  return ApiClient.del(`/posts/${postId}`)
 }
 
 export const searchPosts = (searchQuery: string) => {
@@ -22,5 +22,5 @@ export const searchPosts = (searchQuery: string) => {
 }
 
 export const searchPostsByTag = (tag: string) => {
-  return ApiClient.get<Posts>(`/api/posts/tag/${tag}`)
+  return ApiClient.get<Posts>(`/posts/tag/${tag}`)
 }
