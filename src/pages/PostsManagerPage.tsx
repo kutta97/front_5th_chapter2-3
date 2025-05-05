@@ -18,9 +18,10 @@ import { usePosts } from "../features/post/get-posts/context.tsx"
 import { PostsTable } from "../features/post/get-posts/ui/posts-table.tsx"
 import { highlightText } from "../shared/lib/utils.tsx"
 import { PostAddDialog } from "../features/post/add-post/ui/post-add-dialog.tsx"
+import { PostUpdateDialog } from "../features/post/update-post/ui/post-update-dialog.tsx"
 
 const PostsManager = () => {
-  const { total, searchOptions, getPostsByTag, searchPosts, updatePost, setSearchOptions, updateURL } = usePosts()
+  const { total, searchOptions, getPostsByTag, searchPosts, setSearchOptions, updateURL } = usePosts()
 
   // 상태 관리
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -50,18 +51,6 @@ const PostsManager = () => {
       setTags(data)
     } catch (error) {
       console.error("태그 가져오기 오류:", error)
-    }
-  }
-
-  // 게시물 업데이트
-  const _updatePost = async () => {
-    if (!selectedPost) return
-
-    try {
-      await updatePost(selectedPost)
-      setShowEditDialog(false)
-    } catch (error) {
-      console.error("게시물 업데이트 오류:", error)
     }
   }
 
@@ -342,33 +331,12 @@ const PostsManager = () => {
       <PostAddDialog showAddDialog={showAddDialog} setShowAddDialog={setShowAddDialog} />
 
       {/* 게시물 수정 대화상자 */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>게시물 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="제목"
-              value={selectedPost?.title || ""}
-              onChange={(e) => {
-                if (!selectedPost) return
-                setSelectedPost({ ...selectedPost, title: e.target.value })
-              }}
-            />
-            <Textarea
-              rows={15}
-              placeholder="내용"
-              value={selectedPost?.body || ""}
-              onChange={(e) => {
-                if (!selectedPost) return
-                setSelectedPost({ ...selectedPost, body: e.target.value })
-              }}
-            />
-            <Button onClick={_updatePost}>게시물 업데이트</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PostUpdateDialog
+        showEditDialog={showEditDialog}
+        setShowEditDialog={setShowEditDialog}
+        selectedPost={selectedPost}
+        setSelectedPost={setSelectedPost}
+      />
 
       {/* 댓글 추가 대화상자 */}
       <Dialog open={showAddCommentDialog} onOpenChange={setShowAddCommentDialog}>
