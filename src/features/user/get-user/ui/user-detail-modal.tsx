@@ -1,7 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../shared/ui/dialog/dialog.tsx"
-import { useEffect, useState } from "react"
-import { fetchUser } from "../../../../entities/user/api.ts"
-import { User } from "../../../../entities/user/model.ts"
+import { useGetUser } from "../api.ts"
 
 type UserDetailModalProps = {
   userId?: number | null
@@ -14,25 +12,7 @@ export const UserDetailModal = ({
   showUserDetailModal,
   setShowUserDetailModal,
 }: UserDetailModalProps) => {
-  const [user, setUser] = useState<User | null>(null)
-
-  const getUserDetails = async (userId: number) => {
-    try {
-      const currentUser = await fetchUser(userId)
-
-      setUser(currentUser)
-    } catch (error) {
-      console.error("사용자 정보 가져오기 오류:", error)
-    }
-  }
-
-  useEffect(() => {
-    if (userId === null) {
-      return
-    }
-
-    void getUserDetails(userId)
-  }, [userId])
+  const { data: user } = useGetUser(userId)
 
   return (
     <Dialog open={showUserDetailModal} onOpenChange={setShowUserDetailModal}>
